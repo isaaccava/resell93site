@@ -2264,6 +2264,7 @@ const reservedStockEmptyState = document.getElementById("reservedStockEmptyState
 const reservedStockCount = document.getElementById("reservedStockCount");
 
 const addStockBtn = document.getElementById("addStockBtn");
+const copyStockListBtn = document.getElementById("copyStockListBtn");
 const stockModalOverlay = document.getElementById("stockModalOverlay");
 const stockModalTitle = document.getElementById("stockModalTitle");
 const stockModalClose = document.getElementById("stockModalClose");
@@ -2307,6 +2308,7 @@ async function initStock() {
   renderCustomers();
 
   addStockBtn?.addEventListener("click", () => openStockModal(null, null, "stock"));
+  copyStockListBtn?.addEventListener("click", copyStockListToClipboard);
   stockModalClose?.addEventListener("click", () => {
     returnToHaulDetailIdForStock = null;
     closeStockModal();
@@ -2658,6 +2660,53 @@ async function confirmStockSold() {
   } finally {
     if (saveBtn) saveBtn.disabled = false;
   }
+}
+
+// Plain-text "for sale" list of everything currently available in Stock —
+// excludes sold items and anything reserved (either destined for a specific
+// customer, or bookmark-toggled reserved) — for pasting into
+// Instagram/WhatsApp/Vinted etc. Notes are reused as the "(description)"
+// since that's where color/size variants already live (e.g. "(wine red)").
+// Items sharing the same name (e.g. several "Goyard handtas" in different
+// colors) are grouped onto one line, one description per unit.
+function getAvailableStockListText() {
+  const available = products.filter((p) => p.destination === "stock" && p.status === "available");
+
+  const grouped = new Map();
+  available.forEach((p) => {
+    const desc = p.notes ? p.notes.replace(/^\(|\)$/g, "").trim() : "";
+    if (!grouped.has(p.item)) grouped.set(p.item, []);
+    if (desc) grouped.get(p.item).push(desc);
+  });
+
+  return [...grouped.entries()]
+    .map(([name, descs]) => (descs.length > 0 ? `- ${name} (${descs.join(", ")})` : `- ${name}`))
+    .join("\n");
+}
+
+async function copyStockListToClipboard() {
+  const text = getAvailableStockListText();
+  if (!text) {
+    alert("No available stock to copy.");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    console.error("Failed to copy stock list:", err);
+    alert("Couldn't copy to clipboard — your browser may be blocking clipboard access.");
+    return;
+  }
+
+  if (!copyStockListBtn) return;
+  const original = copyStockListBtn.innerHTML;
+  copyStockListBtn.innerHTML = `<span class="material-symbols-rounded">check</span><span>Copied!</span>`;
+  copyStockListBtn.disabled = true;
+  setTimeout(() => {
+    copyStockListBtn.innerHTML = original;
+    copyStockListBtn.disabled = false;
+  }, 1500);
 }
 
 function renderStock() {

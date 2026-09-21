@@ -856,10 +856,16 @@
             <div class="dashboard-table-container">
               <div class="dashboard-table-header">
                 <h3 class="dashboard-table-title">Stock</h3>
-                <button class="btn btn-primary" id="addStockBtn">
-                  <span class="material-symbols-rounded">add</span>
-                  <span>Add Product</span>
-                </button>
+                <div class="task-toolbar-actions">
+                  <button class="btn btn-secondary" id="copyStockListBtn">
+                    <span class="material-symbols-rounded">content_copy</span>
+                    <span>Copy List</span>
+                  </button>
+                  <button class="btn btn-primary" id="addStockBtn">
+                    <span class="material-symbols-rounded">add</span>
+                    <span>Add Product</span>
+                  </button>
+                </div>
               </div>
               <div style="overflow-x:auto;">
                 <table class="dashboard-table">
@@ -1292,6 +1298,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Scripts -->
-    <script src="script.js?v=46"></script>
+    <script src="script.js?v=48"></script>
   </body>
 </html>
