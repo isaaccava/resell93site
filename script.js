@@ -748,7 +748,12 @@ function updateCustomerStats() {
   if (!customerCountValue) return;
 
   const total = customerOrders.length;
-  const revenue = customerOrders.reduce((sum, c) => sum + (c.status !== "pending" ? Number(c.amount) : 0), 0);
+  // "Total Revenue" here matches Overview/Products: actual sold-item revenue,
+  // not manually-logged order amounts (which drift out of sync — see
+  // [[project_dashboard_customer_schema_migration]]). "Outstanding" stays
+  // order-based since that's a distinct concept (money still owed) with no
+  // equivalent on the products side.
+  const revenue = getTotalSoldRevenue();
   const outstanding = customerOrders.reduce((sum, c) => sum + (c.status === "pending" ? Number(c.amount) : 0), 0);
 
   customerCountValue.textContent = total;
@@ -2496,8 +2501,8 @@ async function saveStockFromForm() {
 
     // Optionally log this backfilled sale as haul income too, same as the
     // normal "Mark as Sold" flow does, so Finances/profit-per-haul catch up.
+    const linkedCustomer = customer_id ? customers.find((c) => c.id === customer_id) : null;
     if (isBackfillSold && haul_id && stockLogIncomeInput.checked) {
-      const linkedCustomer = customer_id ? customers.find((c) => c.id === customer_id) : null;
       const { error: incomeError } = await supabaseClient.from("haul_income").insert([
         {
           haul_id,
@@ -2508,6 +2513,26 @@ async function saveStockFromForm() {
       ]);
       if (incomeError) throw incomeError;
       await loadHaulIncome();
+    }
+
+    // Same sync as the normal "Mark as Sold" flow: a paid Customer Order
+    // matching this sale, so Total Revenue picks it up without a separate
+    // manual entry.
+    if (isBackfillSold && customer_id && stockLogIncomeInput.checked) {
+      const { error: orderError } = await supabaseClient.from("customer_orders").insert([
+        {
+          name: linkedCustomer ? linkedCustomer.name : customerName,
+          order: `${name}${quantity > 1 ? ` (x${quantity})` : ""}`,
+          amount: sale_price,
+          status: "paid",
+          date: sold_date,
+          notes: "",
+          haul_id: haul_id || null,
+          customer_id,
+        },
+      ]);
+      if (orderError) throw orderError;
+      await loadCustomerOrders();
     }
 
     await loadProducts();
@@ -2574,19 +2599,41 @@ async function confirmStockSold() {
 
   try {
     const customer_id = customerName ? await resolveCustomerIdByName(customerName) : null;
+    const soldDate = new Date().toISOString().split("T")[0];
+    const linkedCustomer = customer_id ? customers.find((c) => c.id === customer_id) : null;
 
     if (item.haulId) {
-      const linkedCustomer = customer_id ? customers.find((c) => c.id === customer_id) : null;
       const { error: incomeError } = await supabaseClient.from("haul_income").insert([
         {
           haul_id: item.haulId,
           description: linkedCustomer ? `Sold: ${item.item} (to ${linkedCustomer.name})` : `Sold: ${item.item}`,
           amount: soldPrice,
-          date: new Date().toISOString().split("T")[0],
+          date: soldDate,
         },
       ]);
       if (incomeError) throw incomeError;
       await loadHaulIncome();
+    }
+
+    // Also log a matching *paid* Customer Order so the Customers tab's Total
+    // Revenue (and Finances) stay in sync with what Stock just marked sold,
+    // instead of requiring a separate manual order entry that's easy to
+    // forget (or leave stuck on "pending") — see [[project_dashboard_customer_schema_migration]].
+    if (customer_id) {
+      const { error: orderError } = await supabaseClient.from("customer_orders").insert([
+        {
+          name: linkedCustomer ? linkedCustomer.name : customerName,
+          order: `${item.item}${item.quantity > 1 ? ` (x${item.quantity})` : ""}`,
+          amount: soldPrice,
+          status: "paid",
+          date: soldDate,
+          notes: "",
+          haul_id: item.haulId || null,
+          customer_id,
+        },
+      ]);
+      if (orderError) throw orderError;
+      await loadCustomerOrders();
     }
 
     // We keep the product row (status -> sold) instead of deleting it, so it
@@ -2595,7 +2642,7 @@ async function confirmStockSold() {
     // stats pick it up too.
     const { error } = await supabaseClient
       .from("products")
-      .update({ status: "sold", sale_price: soldPrice, sold_date: new Date().toISOString().split("T")[0], customer_id })
+      .update({ status: "sold", sale_price: soldPrice, sold_date: soldDate, customer_id })
       .eq("id", id);
     if (error) throw error;
 
@@ -2972,6 +3019,28 @@ async function saveBackfillFromForm() {
       const { error: incomeError } = await supabaseClient.from("haul_income").insert(incomeRows);
       if (incomeError) throw incomeError;
       await loadHaulIncome();
+    }
+
+    // Same sync as the normal "Mark as Sold" flow: a paid Customer Order per
+    // item that has a customer, so Total Revenue picks these up too.
+    const itemsWithCustomer = items.filter((item) => item.customer_id);
+    if (backfillLogIncomeInput.checked && itemsWithCustomer.length > 0) {
+      const orderRows = itemsWithCustomer.map((item) => {
+        const linkedCustomer = customers.find((c) => c.id === item.customer_id);
+        return {
+          name: linkedCustomer ? linkedCustomer.name : "",
+          order: item.name,
+          amount: item.sale_price,
+          status: "paid",
+          date: soldDate,
+          notes: "",
+          haul_id: currentBackfillHaulId || null,
+          customer_id: item.customer_id,
+        };
+      });
+      const { error: orderError } = await supabaseClient.from("customer_orders").insert(orderRows);
+      if (orderError) throw orderError;
+      await loadCustomerOrders();
     }
 
     await loadProducts();
