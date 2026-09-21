@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Google Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css?v=18" />
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Dashboard Sidebar -->
+      <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <div class="dashboard-brand">
+          <button class="dashboard-sidebar-toggle">
+            <span class="material-symbols-rounded">menu</span>
+          </button>
+          <a class="logo">My Dashboard</a>
+        </div>
+
+        <nav class="dashboard-nav">
+          <div class="dashboard-nav-section">
+            <a href="#" class="dashboard-nav-item active" data-view="overview">
+              <span class="nav-icon material-symbols-rounded">dashboard</span>
+              <span class="nav-label">Overview</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="stock">
+              <span class="nav-icon material-symbols-rounded">inventory_2</span>
+              <span class="nav-label">Stock</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="products">
+              <span class="nav-icon material-symbols-rounded">bar_chart</span>
+              <span class="nav-label">Products</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="finances">
+              <span class="nav-icon material-symbols-rounded">account_balance_wallet</span>
+              <span class="nav-label">Finances</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="tasks">
+              <span class="nav-icon material-symbols-rounded">checklist</span>
+              <span class="nav-label">Tasks</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="haul">
+              <span class="nav-icon material-symbols-rounded">shopping_bag</span>
+              <span class="nav-label">Haul</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="notes">
+              <span class="nav-icon material-symbols-rounded">sticky_note_2</span>
+              <span class="nav-label">Notes</span>
+            </a>
+            <a href="#" class="dashboard-nav-item" data-view="settings">
+              <span class="nav-icon material-symbols-rounded">settings</span>
+              <span class="nav-label">Settings</span>
+            </a>
+            <!-- Customers nav item visibility is controlled by the "Show Customers tab"
+                 toggle in Settings (persisted in localStorage, see initSettings() in
+                 script.js). View, data, and all cross-links stay fully intact either way. -->
+            <a href="#" class="dashboard-nav-item" data-view="customers" id="customersNavItem">
+              <span class="nav-icon material-symbols-rounded">folder</span>
+              <span class="nav-label">Customers</span>
+            </a>
+          </div>
+        </nav>
+
+        <!-- Back to Site Button -->
+        <div class="sidebar-footer">
+          <a href="#" class="btn btn-secondary sidebar-back-button">
+            <span class="material-symbols-rounded">home</span>
+            <span class="btn-label">Back to Site</span>
+          </a>
+        </div>
+      </aside>
+
+      <div class="dashboard-sidebar-overlay" id="dashboardSidebarOverlay"></div>
+
+      <!-- Dashboard Main Content -->
+      <main class="dashboard-main">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+          <!-- Header Content -->
+          <div class="dashboard-header-content">
+            <button class="dashboard-sidebar-toggle">
+              <span class="material-symbols-rounded">menu</span>
+            </button>
+            <h1 class="dashboard-header-title" id="dashboardTitle">Overview</h1>
+          </div>
+
+          <!-- Search Container -->
+          <div class="search-container" id="searchContainer">
+            <span class="search-icon material-symbols-rounded">search</span>
+            <input type="search" class="search-input form-input" placeholder="Search projects, tasks, reports..." id="searchInput" />
+            <button class="search-close btn" id="searchClose">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+
+          <!-- Header Actions -->
+          <div class="dashboard-header-actions">
+            <!-- Mobile Search Button -->
+            <button class="mobile-search-btn btn btn-ghost" id="mobileSearchBtn">
+              <span class="material-symbols-rounded">search</span>
+            </button>
+
+            <!-- User Profile -->
+            <div class="user-menu" id="userMenu">
+              <div class="user-avatar-small">
+                <img src="user.jpg" alt="User Avatar" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+          <!-- Overview View -->
+          <div class="dashboard-view active" id="overview">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+              <div class="stat-card stat-card-link" id="statCardCustomers" role="button" tabindex="0" data-target-view="customers">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Customers</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">group</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="overviewCustomerCount">0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>View Customers →</span>
+                </div>
+              </div>
+
+              <div class="stat-card stat-card-link" id="statCardPendingTasks" role="button" tabindex="0" data-target-view="tasks">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Pending Tasks</div>
+                  <div class="stat-card-icon warning">
+                    <span class="material-symbols-rounded">schedule</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="overviewPendingTasks">0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>View Tasks →</span>
+                </div>
+              </div>
+
+              <div class="stat-card stat-card-link" id="statCardEarnings" role="button" tabindex="0" data-target-view="products">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Earnings</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">payments</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="overviewTotalEarnings">€0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>View Products →</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Instagram Followers</div>
+                  <div class="stat-card-icon info">
+                    <span class="material-symbols-rounded">photo_camera</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="overviewInstagramFollowers">—</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted); flex-wrap: wrap;">
+                  <span id="overviewInstagramMeta">@resell93luxury_</span>
+                  <button class="btn btn-ghost" id="refreshFollowersBtn" style="padding: 0 4px; height:auto; min-height:0;" title="Fetch live count">
+                    <span class="material-symbols-rounded" style="font-size: 16px;">autorenew</span>
+                  </button>
+                  <button class="btn btn-ghost" id="editFollowersBtn" style="padding: 0 4px; height:auto; min-height:0;" title="Set count manually">
+                    <span class="material-symbols-rounded" style="font-size: 16px;"></span>
+                  </button>
+                </div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span id="overviewInstagramUpdated"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-card-header">
+                  <h3 class="chart-card-title">Revenue per Haul</h3>
+                  <p class="chart-card-subtitle">Income by haul, plus potential revenue from unsold items</p>
+                </div>
+                <div class="chart-container">
+                  <canvas id="progressChart"></canvas>
+                </div>
+              </div>
+
+              <div class="chart-card">
+                <div class="chart-card-header">
+                  <h3 class="chart-card-title">Tasks by Priority</h3>
+                  <p class="chart-card-subtitle">Breakdown of all tasks by priority level</p>
+                </div>
+                <div class="chart-container">
+                  <canvas id="categoryChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unpaid Customers -->
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Unpaid Customers</h3>
+                <button class="btn btn-secondary" id="overviewViewAllBtn">View All</button>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Order</th>
+                      <th>Amount Paid</th>
+                      <th>Payment Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overviewUnpaidTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="overviewUnpaidEmptyState" style="display:none; padding: var(--space-xl) var(--space-md);">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">check_circle</span>
+                </div>
+                <h3 class="empty-state-title">All paid up</h3>
+                <p class="empty-state-description">No outstanding customers right now.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customers View -->
+          <div class="dashboard-view" id="customers">
+            <!-- Customer Stats -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Customers</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">group</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="customerCountValue">0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Revenue</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">payments</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="customerRevenueValue">€0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Outstanding</div>
+                  <div class="stat-card-icon warning">
+                    <span class="material-symbols-rounded">schedule</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="customerOutstandingValue">€0</div>
+              </div>
+            </div>
+
+            <!-- Customers Toolbar -->
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Customers</h3>
+                <button class="btn btn-primary" id="addCustomerBtn">
+                  <span class="material-symbols-rounded">add</span>
+                  <span>Add Customer</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Outstanding Customers -->
+            <div class="dashboard-table-container customer-section" style="margin-top: var(--space-lg);">
+              <div class="dashboard-table-header table-section-header warning">
+                <h3 class="dashboard-table-title">Outstanding <span id="customersUnpaidCount">(0)</span></h3>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Order</th>
+                      <th>Amount Paid</th>
+                      <th>Payment Status</th>
+                      <th>Date</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="customersUnpaidTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="customersUnpaidEmptyState" style="display:none; padding: var(--space-xl) var(--space-md);">
+                <p class="empty-state-description">No outstanding customers — everyone's paid up.</p>
+              </div>
+            </div>
+
+            <!-- Paid Customers -->
+            <div class="dashboard-table-container customer-section" style="margin-top: var(--space-lg);">
+              <div class="dashboard-table-header table-section-header success">
+                <h3 class="dashboard-table-title">Paid <span id="customersPaidCount">(0)</span></h3>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Order</th>
+                      <th>Amount Paid</th>
+                      <th>Payment Status</th>
+                      <th>Date</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="customersPaidTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="customersPaidEmptyState" style="display:none; padding: var(--space-xl) var(--space-md);">
+                <p class="empty-state-description">No fully paid customers yet.</p>
+              </div>
+            </div>
+
+            <div class="empty-state" id="customersEmptyState" style="display:none;">
+              <div class="empty-state-icon">
+                <span class="material-symbols-rounded">group</span>
+              </div>
+              <h3 class="empty-state-title">No customers yet</h3>
+              <p class="empty-state-description">Add your first customer to start tracking orders and payments.</p>
+            </div>
+          </div>
+
+          <!-- Add/Edit Customer Modal -->
+          <div class="modal-overlay" id="customerModalOverlay">
+            <div class="modal" id="customerModal">
+              <div class="modal-header">
+                <h3 class="modal-title" id="customerModalTitle">Add Customer</h3>
+                <button class="btn btn-ghost modal-close" id="customerModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="customerForm">
+                <input type="hidden" id="customerId" />
+                <div class="form-group">
+                  <label class="form-label" for="customerName">Customer name <span style="font-weight: var(--weight-normal); color: var(--color-text-muted);">(start typing to pick a returning customer)</span></label>
+                  <input type="text" id="customerName" class="form-input" placeholder="e.g. Jane Doe" list="existingCustomerNames" required />
+                  <datalist id="existingCustomerNames"></datalist>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="customerOrder">Order / item</label>
+                  <input type="text" id="customerOrder" class="form-input" placeholder="e.g. Gucci Belt, 2x Nike Hoodie" required />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="customerAmount">Amount paid (€)</label>
+                    <input type="number" id="customerAmount" class="form-input" min="0" step="0.01" placeholder="0.00" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="customerStatus">Payment status</label>
+                    <select id="customerStatus" class="form-input">
+                      <option value="paid">Paid</option>
+                      <option value="pending">Pending</option>
+                      <option value="partial">Partially paid</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="customerDate">Date (optional)</label>
+                  <input type="date" id="customerDate" class="form-input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="customerHaul">Haul (optional)</label>
+                  <select id="customerHaul" class="form-input">
+                    <option value="">— None —</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="customerNotes">Notes (optional)</label>
+                  <textarea id="customerNotes" class="form-input" rows="2" placeholder="Shipping address, contact info, etc."></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="customerCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="customerSaveBtn">Save Customer</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Tasks View -->
+          <div class="dashboard-view" id="tasks">
+            <!-- Task Stats -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Tasks</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">checklist</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="taskCountValue">0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Completed</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">check_circle</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="taskCompletedValue">0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Open</div>
+                  <div class="stat-card-icon warning">
+                    <span class="material-symbols-rounded">schedule</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="taskOpenValue">0</div>
+              </div>
+            </div>
+
+            <!-- Tasks List -->
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">To-do list</h3>
+                <div class="task-toolbar-actions">
+                  <div class="task-filter-group" id="taskFilterGroup">
+                    <button class="task-filter-btn active" data-filter="all">All</button>
+                    <button class="task-filter-btn" data-filter="open">Open</button>
+                    <button class="task-filter-btn" data-filter="completed">Completed</button>
+                  </div>
+                  <button class="btn btn-primary" id="addTaskBtn">
+                    <span class="material-symbols-rounded">add</span>
+                    <span>Add Task</span>
+                  </button>
+                </div>
+              </div>
+
+              <ul class="task-list" id="taskList"></ul>
+
+              <div class="empty-state" id="tasksEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">checklist</span>
+                </div>
+                <h3 class="empty-state-title">No tasks yet</h3>
+                <p class="empty-state-description">Add a task to keep track of what needs doing — optionally link it to a customer.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Task Modal -->
+          <div class="modal-overlay" id="taskModalOverlay">
+            <div class="modal" id="taskModal">
+              <div class="modal-header">
+                <h3 class="modal-title" id="taskModalTitle">Add Task</h3>
+                <button class="btn btn-ghost modal-close" id="taskModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="taskForm">
+                <input type="hidden" id="taskId" />
+                <div class="form-group">
+                  <label class="form-label" for="taskTitle">Task</label>
+                  <input type="text" id="taskTitle" class="form-input" placeholder="e.g. Ship order to Jane" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="taskCustomer">Related customer (optional)</label>
+                  <select id="taskCustomer" class="form-input">
+                    <option value="">— None —</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="taskPriority">Priority</label>
+                    <select id="taskPriority" class="form-input">
+                      <option value="low">Low</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="taskDueDate">Due date (optional)</label>
+                    <input type="date" id="taskDueDate" class="form-input" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="taskNotes">Notes (optional)</label>
+                  <textarea id="taskNotes" class="form-input" rows="2" placeholder="Any extra details"></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="taskCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="taskSaveBtn">Save Task</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Haul View -->
+          <div class="dashboard-view" id="haul">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Hauls</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">shopping_bag</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="haulCountValue">0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Income</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">trending_up</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="haulIncomeValue">€0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Expenses</div>
+                  <div class="stat-card-icon warning">
+                    <span class="material-symbols-rounded">trending_down</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="haulExpenseValue">€0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Net Profit</div>
+                  <div class="stat-card-icon info">
+                    <span class="material-symbols-rounded">payments</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="haulProfitValue">€0</div>
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Hauls</h3>
+                <button class="btn btn-primary" id="addHaulBtn">
+                  <span class="material-symbols-rounded">add</span>
+                  <span>Add Haul</span>
+                </button>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Haul</th>
+                      <th>Status</th>
+                      <th>Customers</th>
+                      <th>Income</th>
+                      <th>Expenses</th>
+                      <th>Profit</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="haulsTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="haulsEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">shopping_bag</span>
+                </div>
+                <h3 class="empty-state-title">No hauls yet</h3>
+                <p class="empty-state-description">Add a haul to start tracking its customers, income, and expenses.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Haul Modal -->
+          <div class="modal-overlay" id="haulModalOverlay">
+            <div class="modal" id="haulModal">
+              <div class="modal-header">
+                <h3 class="modal-title" id="haulModalTitle">Add Haul</h3>
+                <button class="btn btn-ghost modal-close" id="haulModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="haulForm">
+                <input type="hidden" id="haulId" />
+                <div class="form-group">
+                  <label class="form-label" for="haulName">Haul name</label>
+                  <input type="text" id="haulName" class="form-input" placeholder="e.g. Thrift Run - June" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="haulStatus">Status</label>
+                  <select id="haulStatus" class="form-input">
+                    <option value="draft">Concept</option>
+                    <option value="planned">Planned</option>
+                    <option value="underway">Underway</option>
+                    <option value="arrived">Arrived</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div class="form-group" id="haulExpectedRevenueGroup" style="display:none;">
+                  <label class="form-label" for="haulExpectedRevenue">Expected revenue (€)</label>
+                  <input type="number" id="haulExpectedRevenue" class="form-input" placeholder="0.00" min="0" step="0.01" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="haulDate">Date (optional)</label>
+                  <input type="date" id="haulDate" class="form-input" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="haulNotes">Notes (optional)</label>
+                  <textarea id="haulNotes" class="form-input" rows="2" placeholder="Where you sourced it, what's in it, etc."></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="haulCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="haulSaveBtn">Save Haul</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Haul Detail Modal -->
+          <div class="modal-overlay" id="haulDetailModalOverlay">
+            <div class="modal haul-detail-modal" id="haulDetailModal">
+              <div class="modal-header">
+                <h3 class="modal-title" id="haulDetailTitle">Haul</h3>
+                <button class="btn btn-ghost modal-close" id="haulDetailClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+
+              <div class="haul-detail-summary" id="haulDetailSummary"></div>
+
+              <div class="haul-detail-section">
+                <div class="haul-detail-section-header">
+                  <h4>Customers</h4>
+                  <button type="button" class="btn btn-secondary" id="haulDetailAddCustomerBtn" style="padding: var(--space-xs) var(--space-md); height: auto;">
+                    <span class="material-symbols-rounded" style="font-size: var(--text-base);">add</span>
+                    <span>Add Customer</span>
+                  </button>
+                </div>
+                <ul class="haul-mini-list" id="haulDetailCustomers"></ul>
+                <p class="empty-state-description" id="haulDetailCustomersEmpty" style="display:none; padding: var(--space-sm) 0;">No customers linked yet.</p>
+              </div>
+
+              <div class="haul-detail-section">
+                <div class="haul-detail-section-header">
+                  <h4>Products</h4>
+                  <div style="display:flex; gap: var(--space-xs);">
+                    <button type="button" class="btn btn-secondary" id="haulDetailBackfillBtn" style="padding: var(--space-xs) var(--space-md); height: auto;">
+                      <span class="material-symbols-rounded" style="font-size: var(--text-base);">history</span>
+                      <span>Backfill Sold Items</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="haulDetailAddStockBtn" style="padding: var(--space-xs) var(--space-md); height: auto;">
+                      <span class="material-symbols-rounded" style="font-size: var(--text-base);">add</span>
+                      <span>Add Product</span>
+                    </button>
+                  </div>
+                </div>
+                <ul class="haul-mini-list" id="haulDetailStock"></ul>
+                <p class="empty-state-description" id="haulDetailStockEmpty" style="display:none; padding: var(--space-sm) 0;">No products added yet. Add one and choose whether it's for stock or a customer.</p>
+              </div>
+
+              <div class="haul-detail-section">
+                <div class="haul-detail-section-header">
+                  <h4>Income</h4>
+                </div>
+                <ul class="haul-mini-list" id="haulDetailIncome"></ul>
+                <form class="haul-mini-form" id="haulIncomeForm">
+                  <input type="text" id="haulIncomeDescription" class="form-input" placeholder="Description" required />
+                  <input type="number" id="haulIncomeAmount" class="form-input" placeholder="Amount" min="0" step="0.01" required />
+                  <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+              </div>
+
+              <div class="haul-detail-section">
+                <div class="haul-detail-section-header">
+                  <h4>Expenses</h4>
+                </div>
+                <ul class="haul-mini-list" id="haulDetailExpenses"></ul>
+                <form class="haul-mini-form" id="haulExpenseForm" style="flex-wrap: wrap;">
+                  <input type="text" id="haulExpenseDescription" class="form-input" placeholder="Description" required />
+                  <input type="number" id="haulExpenseAmount" class="form-input" placeholder="Amount" min="0" step="0.01" required />
+                  <button type="submit" class="btn btn-primary">Add</button>
+                  <div class="form-group" id="haulExpenseCountNowGroup" style="display:none; flex-basis:100%; align-items:center; gap: var(--space-sm); margin: var(--space-xs) 0 0;">
+                    <input type="checkbox" id="haulExpenseCountNow" style="width:auto;" />
+                    <label class="form-label" for="haulExpenseCountNow" style="margin:0;">Count this expense now, even though the haul is still a Concept</label>
+                  </div>
+                </form>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary danger" id="haulDetailDeleteBtn">Delete Haul</button>
+                <button type="button" class="btn btn-secondary" id="haulDetailEditBtn">Edit Details</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Finances View -->
+          <div class="dashboard-view" id="finances">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Revenue</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">payments</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="financeTotalRevenue">€0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>All customer payments + haul income</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Expenses</div>
+                  <div class="stat-card-icon warning">
+                    <span class="material-symbols-rounded">trending_down</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="financeTotalExpenses">€0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>Haul + business expenses</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Net Profit</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">account_balance_wallet</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="financeNetProfit">€0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>Revenue minus expenses</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-card-header">
+                  <h3 class="chart-card-title">Profit by Haul</h3>
+                  <p class="chart-card-subtitle">Income minus expenses for each haul</p>
+                </div>
+                <div class="chart-container">
+                  <canvas id="haulProfitChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Profit per Haul</h3>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Haul</th>
+                      <th>Income</th>
+                      <th>Expenses</th>
+                      <th>Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="financeHaulTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="financeHaulEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">account_balance_wallet</span>
+                </div>
+                <h3 class="empty-state-title">No hauls yet</h3>
+                <p class="empty-state-description">Add a haul on the Haul tab to see its profit breakdown here.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Business Expenses</h3>
+              </div>
+              <div style="padding: var(--space-lg);">
+                <p class="chart-card-subtitle" style="margin-bottom: var(--space-md);">Overhead costs that aren't tied to one haul — packaging, bags, shipping supplies, etc.</p>
+                <ul class="haul-mini-list" id="businessExpenseList"></ul>
+                <form class="haul-mini-form" id="businessExpenseForm" style="flex-wrap: wrap;">
+                  <input type="text" id="businessExpenseDescription" class="form-input" placeholder="Description (e.g. Bags)" required />
+                  <input type="number" id="businessExpenseAmount" class="form-input" placeholder="Amount" min="0" step="0.01" required />
+                  <button type="submit" class="btn btn-primary">Add</button>
+                </form>
+              </div>
+              <div class="empty-state" id="businessExpenseEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">shopping_bag</span>
+                </div>
+                <h3 class="empty-state-title">No business expenses yet</h3>
+                <p class="empty-state-description">Log overhead costs like packaging, bags, and supplies that aren't tied to a specific haul.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock View -->
+          <div class="dashboard-view" id="stock">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Items in Stock</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">inventory_2</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="stockItemCountValue">0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Total Quantity</div>
+                  <div class="stat-card-icon info">
+                    <span class="material-symbols-rounded">numbers</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="stockQuantityValue">0</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Estimated Value</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">payments</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="stockValueValue">€0</div>
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Stock</h3>
+                <button class="btn btn-primary" id="addStockBtn">
+                  <span class="material-symbols-rounded">add</span>
+                  <span>Add Product</span>
+                </button>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Category</th>
+                      <th>Quantity</th>
+                      <th>Price</th>
+                      <th>Haul</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="stockTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="stockEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">inventory_2</span>
+                </div>
+                <h3 class="empty-state-title">No stock yet</h3>
+                <p class="empty-state-description">Add products you currently have in stock.</p>
+                
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Reserved for Customers <span id="reservedStockCount"></span></h3>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Customer</th>
+                      <th>Haul</th>
+                      <th>Price</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="reservedStockTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="reservedStockEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">bookmark</span>
+                </div>
+                <h3 class="empty-state-title">Nothing reserved right now</h3>
+                <p class="empty-state-description">Add a product "for a specific customer" and, once it's not sold yet, it'll show up here.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add/Edit Product Modal -->
+          <div class="modal-overlay" id="stockModalOverlay">
+            <div class="modal" id="stockModal">
+              <div class="modal-header">
+                <h3 class="modal-title" id="stockModalTitle">Add Product</h3>
+                <button class="btn btn-ghost modal-close" id="stockModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="stockForm">
+                <input type="hidden" id="stockId" />
+                <div class="form-group">
+                  <label class="form-label" for="stockItem">Item name</label>
+                  <input type="text" id="stockItem" class="form-input" placeholder="e.g. Nike Hoodie (M)" list="existingProductNames" required />
+                  <datalist id="existingProductNames"></datalist>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="stockCategory">Category (optional)</label>
+                    <input type="text" id="stockCategory" class="form-input" placeholder="e.g. Hoodie, Sneakers, Bag" list="existingProductCategories" />
+                    <datalist id="existingProductCategories"></datalist>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="stockQuantity">Quantity</label>
+                    <input type="number" id="stockQuantity" class="form-input" min="0" step="1" value="1" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="stockPrice">Price (optional)</label>
+                  <input type="number" id="stockPrice" class="form-input" min="0" step="0.01" placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="stockDestination">This product is for</label>
+                  <select id="stockDestination" class="form-input">
+                    <option value="stock">Stock (general inventory)</option>
+                    <option value="customer">A specific customer</option>
+                  </select>
+                </div>
+                <div class="form-group" id="stockCustomerGroup" style="display:none;">
+                  <label class="form-label" for="stockCustomer">Customer</label>
+                  <input type="text" id="stockCustomer" class="form-input" placeholder="Type a name — new ones are added automatically" list="existingCustomerNames" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="stockHaul">Haul (optional)</label>
+                  <select id="stockHaul" class="form-input">
+                    <option value="">— None —</option>
+                  </select>
+                </div>
+                <div class="form-group" style="display:flex; align-items:center; gap: var(--space-sm);">
+                  <input type="checkbox" id="stockAlreadySold" style="width:auto;" />
+                  <label class="form-label" for="stockAlreadySold" style="margin:0;">This item already sold (backfilling a past sale)</label>
+                </div>
+                <div id="stockBackfillGroup" style="display:none;">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="stockSoldPriceBackfill">Sold for</label>
+                      <input type="number" id="stockSoldPriceBackfill" class="form-input" min="0" step="0.01" placeholder="0.00" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="stockSoldDateBackfill">Date sold</label>
+                      <input type="date" id="stockSoldDateBackfill" class="form-input" />
+                    </div>
+                  </div>
+                  <div class="form-group" id="stockLogIncomeGroup" style="display:flex; align-items:center; gap: var(--space-sm);">
+                    <input type="checkbox" id="stockLogIncome" style="width:auto;" checked />
+                    <label class="form-label" for="stockLogIncome" style="margin:0;">Also add this as income on the linked haul</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="stockNotes">Notes (optional)</label>
+                  <textarea id="stockNotes" class="form-input" rows="2" placeholder="Size, condition, storage location, etc."></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="stockCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="stockSaveBtn">Save Product</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Mark Stock as Sold Modal -->
+          <div class="modal-overlay" id="stockSoldModalOverlay">
+            <div class="modal" id="stockSoldModal">
+              <div class="modal-header">
+                <h3 class="modal-title">Mark as Sold</h3>
+                <button class="btn btn-ghost modal-close" id="stockSoldModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="stockSoldForm">
+                <input type="hidden" id="stockSoldId" />
+                <p class="empty-state-description" id="stockSoldItemName" style="padding: 0 0 var(--space-sm) 0;"></p>
+                <div class="form-group">
+                  <label class="form-label" for="stockSoldPrice">Sold price</label>
+                  <input type="number" id="stockSoldPrice" class="form-input" min="0" step="0.01" placeholder="0.00" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="stockSoldCustomer">Sold to (optional)</label>
+                  <input type="text" id="stockSoldCustomer" class="form-input" placeholder="Type a name — new ones are added automatically" list="existingCustomerNames" />
+                </div>
+                <p class="empty-state-description" id="stockSoldHaulNote" style="padding: 0;"></p>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="stockSoldCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="stockSoldSaveBtn">Confirm Sold</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Reserve Stock for Customer Modal -->
+          <div class="modal-overlay" id="stockReserveModalOverlay">
+            <div class="modal" id="stockReserveModal">
+              <div class="modal-header">
+                <h3 class="modal-title">Reserve for Customer</h3>
+                <button class="btn btn-ghost modal-close" id="stockReserveModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="stockReserveForm">
+                <input type="hidden" id="stockReserveId" />
+                <p class="empty-state-description" id="stockReserveItemName" style="padding: 0 0 var(--space-sm) 0;"></p>
+                <div class="form-group">
+                  <label class="form-label" for="stockReserveCustomer">Reserve for</label>
+                  <input type="text" id="stockReserveCustomer" class="form-input" placeholder="Type a name — new ones are added automatically" list="existingCustomerNames" required />
+                </div>
+                <p class="empty-state-description" style="padding: 0;">
+                  Moves it to "Reserved for Customers" until you mark it sold — or edit it back to stock if the deal falls through.
+                </p>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="stockReserveCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="stockReserveSaveBtn">Confirm Reserve</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Products View -->
+          <div class="dashboard-view" id="products">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Products Catalogued</div>
+                  <div class="stat-card-icon primary">
+                    <span class="material-symbols-rounded">checkroom</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="productsTotalCount">0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>Every piece ever bought</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Sold</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">sell</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="productsSoldCount">0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span id="productsSellThrough">0% sell-through</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Still Available</div>
+                  <div class="stat-card-icon warning">
+                    <span class="material-symbols-rounded">inventory_2</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="productsAvailableCount">0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span>In stock or reserved</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-header">
+                  <div class="stat-card-title">Revenue from Sales</div>
+                  <div class="stat-card-icon success">
+                    <span class="material-symbols-rounded">payments</span>
+                  </div>
+                </div>
+                <div class="stat-card-value" id="productsTotalRevenue">€0</div>
+                <div class="stat-card-change" style="color: var(--color-text-muted);">
+                  <span id="productsAvgSale">Avg €0 / sale</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-grid">
+              <div class="chart-card">
+                <div class="chart-card-header">
+                  <h3 class="chart-card-title">Best Selling Products</h3>
+                  <p class="chart-card-subtitle">Top items by revenue</p>
+                </div>
+                <div class="chart-container">
+                  <canvas id="topProductsChart"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <div class="chart-card-header">
+                  <h3 class="chart-card-title">Revenue by Category</h3>
+                  <p class="chart-card-subtitle">Which type of item sells best</p>
+                </div>
+                <div class="chart-container">
+                  <canvas id="categoryRevenueChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Top Customers</h3>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Customer</th>
+                      <th>Items Bought</th>
+                      <th>Total Spent</th>
+                    </tr>
+                  </thead>
+                  <tbody id="topCustomersTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="topCustomersEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">person</span>
+                </div>
+                <h3 class="empty-state-title">No sales linked to customers yet</h3>
+                <p class="empty-state-description">Once you mark products as sold to a customer, they'll show up here ranked by spend.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Full Catalog</h3>
+                <select id="productsFilterSelect" class="form-input" style="max-width: 180px;">
+                  <option value="all">All products</option>
+                  <option value="available">Available (stock)</option>
+                  <option value="reserved">Reserved</option>
+                  <option value="sold">Sold</option>
+                </select>
+              </div>
+              <div style="overflow-x:auto;">
+                <table class="dashboard-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Category</th>
+                      <th>For</th>
+                      <th>Status</th>
+                      <th>Price</th>
+                      <th>Sold For</th>
+                    </tr>
+                  </thead>
+                  <tbody id="productsCatalogTableBody"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="productsCatalogEmptyState" style="display:none;">
+                <div class="empty-state-icon">
+                  <span class="material-symbols-rounded">checkroom</span>
+                </div>
+                <h3 class="empty-state-title">No products yet</h3>
+                <p class="empty-state-description">Add products from a haul or the Stock tab and they'll show up here.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Backfill Sold Items Modal (add several past sales at once) -->
+          <div class="modal-overlay" id="backfillModalOverlay">
+            <div class="modal" id="backfillModal" style="max-width: 640px;">
+              <div class="modal-header">
+                <h3 class="modal-title">Backfill Sold Items</h3>
+                <button class="btn btn-ghost modal-close" id="backfillModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <p class="empty-state-description" id="backfillHaulNote" style="padding: 0 0 var(--space-md) 0;"></p>
+              <form id="backfillForm">
+                <div id="backfillRows"></div>
+                <button type="button" class="btn btn-secondary" id="backfillAddRowBtn" style="margin-bottom: var(--space-md);">
+                  <span class="material-symbols-rounded" style="font-size: var(--text-base);">add</span>
+                  <span>Add another item</span>
+                </button>
+                <div class="form-group" style="display:flex; align-items:center; gap: var(--space-sm);">
+                  <input type="checkbox" id="backfillLogIncome" style="width:auto;" checked />
+                  <label class="form-label" for="backfillLogIncome" style="margin:0;">Also log each sale as haul income</label>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="backfillCancelBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="backfillSaveBtn">Save Items</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Notes View -->
+          <div class="dashboard-view" id="notes">
+            <div class="dashboard-table-container">
+              <div class="dashboard-table-header">
+                <h3 class="dashboard-table-title">Notes</h3>
+                <button class="btn btn-primary" id="addNoteBtn">
+                  <span class="material-symbols-rounded">add</span>
+                  <span>Add Note</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="notes-grid" id="notesGrid"></div>
+
+            <div class="empty-state" id="notesEmptyState" style="display:none;">
+              <div class="empty-state-icon">
+                <span class="material-symbols-rounded">sticky_note_2</span>
+              </div>
+              <h3 class="empty-state-title">No notes yet</h3>
+              <p class="empty-state-description">Nog geen notities.</p>
+            </div>
+          </div>
+
+          <!-- Add/Edit Note Modal -->
+          <div class="modal-overlay" id="noteModalOverlay">
+            <div class="modal" id="noteModal">
+              <div class="modal-header">
+                <h3 class="modal-title" id="noteModalTitle">Add Note</h3>
+                <button class="btn btn-ghost modal-close" id="noteModalClose">
+                  <span class="material-symbols-rounded">close</span>
+                </button>
+              </div>
+              <form id="noteForm">
+                <input type="hidden" id="noteId" />
+                <div class="form-group">
+                  <label class="form-label" for="noteTitle">Title</label>
+                  <input type="text" id="noteTitle" class="form-input" placeholder="e.g. Supplier contact" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="noteContent">Note</label>
+                  <textarea id="noteContent" class="form-input" rows="6" placeholder="Write your note here..."></textarea>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-secondary" id="noteCancelBtn">Cancel</button>
+                  s<button type="submit" class="btn btn-primary" id="noteSaveBtn">Save Note</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Settings View -->
+          <div class="dashboard-view" id="settings">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3 class="chart-card-title">Navigation</h3>
+                <p class="chart-card-subtitle">Pagina's in de sidebar aan/uit zetten.</p>
+              </div>
+              <div class="settings-toggle-row">
+                <div class="settings-toggle-info">
+                  <div class="settings-toggle-label">Show Customers</div>
+                  <div class="settings-toggle-description">Laat de customers pagina zien in de sidebar.</div>
+                </div>
+                <label class="settings-toggle">
+                  <input type="checkbox" id="showCustomersTabToggle" />
+                  <span class="settings-toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Scripts -->
+    <script src="script.js?v=44"></script>
+  </body>
+</html>
